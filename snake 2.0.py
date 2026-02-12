@@ -1,76 +1,130 @@
-#Prva naloga:
-from cmath import rect
+#Napiši snake-game v pygamu
+#koda od prej ti lahko sliži za inspiracijo (npr dolzina kace s kvadratki -> to pride prav)
 
-#naredi pygame program, kjer so na ekranu 4je recti; vsi se premikajo, lahko levo-desno, ali pa gor-dol,
-#lahko tudi poševno
+#za projekt naredite github repozitorij, in spremembe sproti comitatje addajte in pushajte
+#na koncu morajo biti v repozitoriju vsaj 3 vecji commiti
 
-#naloga je, da vsakič, ko se dva recta dotakneta, si izmenjata malo barve
-#(če je rumen, drug zelen, bo rumen dal malo svoje barve zelenemu in obratno)
+#okiren plan
+
+#I. Naredi ogrodje -> while zanka, canvas, eventi za exit itd
 
 
-#dodatna naloga; ko se recta dotakneta, se odbijeta nazaj v smer iz katere sta prišla
+#II. Naredi kvadrat -> ta kvadrat bo v prihodnisti ratala kača, zaenkrat naj bo samo kvadrat
+#	naredi logiko da ta kvadrat lahko zavija levo desno z kliki na gumne na tipkovnici
+#	naredi logiko, da se nakej izpiše, ko se ta kvadrat dotakne stene
+#	naredi logiko, da se ta kvadrat premika po nekem "gridu" -> hint nastavi clock.tick na nekaj malega,
+#		vsak frame premakni kaco za nekaj pixlov, ta premik predstavlja sirino vsake celice
+
+
+#III. Kvdrat spremeni v seznam kvadratov, ki predstavljajo kaco
+
+
+#IV. Naredi logiko, da se nekaj izpiše, ce se kace zabije sama vase
+
+
+#V. Naredi nek nov kvadrat ki predstavlja hrano
+#	-> naredi da se vsakic ko ga kaca poje z glavo prestavi na nakljucno mesto in kaca zrasta
+
+
+#od tu naprej je treba samo še štet score, kej izpiovat na ekrat, dt kk gumb za game over pa restart itd... neke olepšave
+
+
+
+
+#1. dodatna naloga:
+#naredi branch "izgled"
+#v tem brancu naredi logiko, da ko igra tece, lahko pritisnes gumb "space" kar celotni kaci nastavi nakljucno barvo
+
+#2. dodatna naloga:
+#naredi branch "multiplayer"
+#v tem branchu naredi logiko, da sta na zacetku igre 2 kaci, ena se upravlja z wasd, druga z gumbi s puscicami
+#ce se aca zabije vase, v drugo kaco ali v steno, izgubi
+
+#3. dodatna naloga
+#naredi megre obeh branchov
 
 import pygame
+import random
+import sys
 
 pygame.init()
+
+WIDTH = 1000
+HEIGHT = 900
+CELL_SIZE = 50
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Snake Game 2.0")
+
+font = pygame.font.Font(pygame.font.get_default_font(), 36)
+
 clock = pygame.time.Clock()
 
-canvas = pygame.display.set_mode((900, 900))
-canvas_color = "white"
-pygame.display.set_caption("Vaja 1")
-
-exit = False
-
-color1 = [255, 0, 0]
-color2 = [0, 255, 0]
-color3 = [0, 0, 255]
-color4 = [255, 0, 255]
-
-rect1 = pygame.Rect(400, 50, 100, 100)
-rect2 = pygame.Rect(750, 400, 100, 100)
-rect3 = pygame.Rect(50, 400, 100, 100)
-rect4 = pygame.Rect(400, 750, 100, 100)
-
-rect1_waiting = False
-wait_until = 0
-
-rect1_vel = 1
-rect2_vel = 1
-rect3_vel = 1
-rect4_vel = 1
-
-cooldown_start = 0
-cooldown_duration = 800
-
-while not exit:
-    clock.tick(400)
-    canvas.fill(canvas_color)
-    current_time = pygame.time.get_ticks()
+print("press r to restart")
+print("press q to quit")
 
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            exit = True
+def game_loop():
+    snake = [(100, 100), (50, 100), (0, 100)]
+    direction = (CELL_SIZE, 0)
 
-    now = pygame.time.get_ticks()
+    food = (
+        random.randrange(0, WIDTH, CELL_SIZE),
+        random.randrange(0, HEIGHT, CELL_SIZE),
+    )
 
-    if (rect1.y < 0 or rect1.y > 800) and not rect1_waiting:
-        rect1_vel *= -1
-        wait_until = now + 4000
+    score = 0
+    running = True
 
-    if rect1_waiting and now >= wait_until:
-        rect1_waiting = False
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-    if not rect1_waiting:
-        rect1.y += rect1_vel
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP and direction != (0, CELL_SIZE):
+                    direction = (0, -CELL_SIZE)
+                elif event.key == pygame.K_DOWN and direction != (0, -CELL_SIZE):
+                    direction = (0, CELL_SIZE)
+                elif event.key == pygame.K_LEFT and direction != (CELL_SIZE, 0):
+                    direction = (-CELL_SIZE, 0)
+                elif event.key == pygame.K_RIGHT and direction != (-CELL_SIZE, 0):
+                    direction = (CELL_SIZE, 0)
+                elif event.key == pygame.K_q:
+                    pygame.quit()
+                    sys.exit()
+                elif event.key == pygame.K_r:
+                    return
+
+        head_x, head_y = snake[0]
+        new_head = (head_x + direction[0], head_y + direction[1])
+        snake.insert(0, new_head)
+
+        if new_head == food:
+            score += 1
+            food = random.randrange(0, WIDTH, CELL_SIZE),random.randrange(0, HEIGHT, CELL_SIZE)
+        else:
+            snake.pop()
+
+        # collision detection
+        if new_head[0] < 0 or new_head[0] >= WIDTH or new_head[1] < 0 or new_head[1] >= HEIGHT or new_head in snake[1:]:
+            return  # game over → restart
+
+        screen.fill("black")
+
+        for x, y in snake:
+            pygame.draw.rect(screen, "green", (x, y, CELL_SIZE, CELL_SIZE))
+
+        pygame.draw.rect(screen, "red", (food[0], food[1], CELL_SIZE, CELL_SIZE))
+
+        score_text = font.render(f"Score: " + str(score), True, "white")
+        screen.blit(score_text, (10, 10))
+
+        pygame.display.update()
+        clock.tick(13)
 
 
-
-
-
-    pygame.draw.rect(canvas, tuple(color1), rect1)
-
-
-    pygame.display.update()
-
-pygame.quit()
+# restart loop
+while True:
+    game_loop()
