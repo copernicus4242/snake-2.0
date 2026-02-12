@@ -8,7 +8,6 @@
 
 #I. Naredi ogrodje -> while zanka, canvas, eventi za exit itd
 
-
 #II. Naredi kvadrat -> ta kvadrat bo v prihodnisti ratala kača, zaenkrat naj bo samo kvadrat
 #	naredi logiko da ta kvadrat lahko zavija levo desno z kliki na gumne na tipkovnici
 #	naredi logiko, da se nakej izpiše, ko se ta kvadrat dotakne stene
@@ -27,9 +26,6 @@
 
 
 #od tu naprej je treba samo še štet score, kej izpiovat na ekrat, dt kk gumb za game over pa restart itd... neke olepšave
-
-
-
 
 #1. dodatna naloga:
 #naredi branch "izgled"
@@ -63,15 +59,13 @@ clock = pygame.time.Clock()
 print("press r to restart")
 print("press q to quit")
 
+snake_color = (0, 255, 0)
 
-def game_loop():
+def game_loop(snake_color=(0, 255, 0)):
     snake = [(100, 100), (50, 100), (0, 100)]
     direction = (CELL_SIZE, 0)
 
-    food = (
-        random.randrange(0, WIDTH, CELL_SIZE),
-        random.randrange(0, HEIGHT, CELL_SIZE),
-    )
+    food = (random.randrange(0, WIDTH, CELL_SIZE), random.randrange(0, HEIGHT, CELL_SIZE))
 
     score = 0
     running = True
@@ -94,6 +88,11 @@ def game_loop():
                 elif event.key == pygame.K_q:
                     pygame.quit()
                     sys.exit()
+                elif event.key == pygame.K_SPACE:
+                    n1 = random.randrange(0, 255)
+                    n2 = random.randrange(0, 255)
+                    n3 = random.randrange(0, 255)
+                    snake_color = (n1, n2, n3)
                 elif event.key == pygame.K_r:
                     return
 
@@ -114,7 +113,7 @@ def game_loop():
         screen.fill("black")
 
         for x, y in snake:
-            pygame.draw.rect(screen, "green", (x, y, CELL_SIZE, CELL_SIZE))
+            pygame.draw.rect(screen, snake_color, (x, y, CELL_SIZE, CELL_SIZE))
 
         pygame.draw.rect(screen, "red", (food[0], food[1], CELL_SIZE, CELL_SIZE))
 
@@ -122,7 +121,7 @@ def game_loop():
         screen.blit(score_text, (10, 10))
 
         pygame.display.update()
-        clock.tick(13)
+        clock.tick(9)
 
 
 # restart loop
